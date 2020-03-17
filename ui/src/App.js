@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
+import ReactDOM from "react-dom";
+import CanvasDraw from "react-canvas-draw";
 import Form from 'react-bootstrap/Form';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
@@ -68,9 +70,10 @@ class App extends Component {
     return (
       <Container>
         <div>
-          <h1 className="title">ML React App</h1>
+          <h1 className="title">Predict a letter</h1>
         </div>
         <div className="content">
+          <CanvasDraw />
           <Form>
             <Form.Row>
               <Form.Group as={Col}>
