@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import './App.css';
 import ReactDOM from "react-dom";
 import CanvasDraw from "react-canvas-draw";
 import Form from 'react-bootstrap/Form';
@@ -7,6 +6,7 @@ import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
+import './App.css';
 import 'bootstrap/dist/css/bootstrap.css';
 
 class App extends Component {
@@ -16,6 +16,14 @@ class App extends Component {
 
     this.state = {
       isLoading: false,
+      canvasData: {
+        color: "#222",
+        radius: 5,
+        width: 800,
+        height: 400,
+        lazyRadius: 5
+        // hideGrid: true
+      },
       formData: {
         textfield1: '',
         textfield2: '',
@@ -31,10 +39,56 @@ class App extends Component {
     const value = event.target.value;
     const name = event.target.name;
     var formData = this.state.formData;
-    formData[name] = value;
     this.setState({
       formData
     });
+    formData[name] = value;
+    // var canvasData = this.state.canvasData;
+    // this.setState({
+    //   canvasData
+    // });
+    // canvasData[name] = value;
+  }
+
+  handleSaveClick = (event) => {
+    console.log('bloop');
+    localStorage.setItem("savedDrawing", this.saveableCanvas.getSaveData());
+    console.log(localStorage);
+
+    console.log('bleep');
+    console.log(this.saveableCanvas);
+
+    console.log('blong');
+    console.log(this.saveableCanvas.canvas.drawing.toDataURL('image/png'));
+    let canvas = this.saveableCanvas.canvas.interface;
+    let canvasContainer = this.saveableCanvas.canvas.canvasContainer;
+    // let canvas = this.saveableCanvas;
+    console.log(canvas);
+    console.log(canvas.toDataURL('image/png'));
+
+    console.log(canvasContainer);
+    console.log(canvasContainer.toDataURL('image/png'))
+    // let dataURL = canvas.toDataURL('image/png');
+    // console.log(dataURL);
+
+    // const formData = this.state.formData;
+    // this.setState({ isLoading: true });
+    // fetch('http://127.0.0.1:5000/prediction/', 
+    //   {
+    //     headers: {
+    //       'Accept': 'application/json',
+    //       'Content-Type': 'application/json'
+    //     },
+    //     method: 'POST',
+    //     body: JSON.stringify(formData)
+    //   })
+    //   .then(response => response.json())
+    //   .then(response => {
+    //     this.setState({
+    //       result: response.result,
+    //       isLoading: false
+    //     });
+    //   });
   }
 
   handlePredictClick = (event) => {
@@ -65,6 +119,7 @@ class App extends Component {
   render() {
     const isLoading = this.state.isLoading;
     const formData = this.state.formData;
+    const canvasData = this.state.canvasData;
     const result = this.state.result;
 
     return (
@@ -73,7 +128,13 @@ class App extends Component {
           <h1 className="title">Predict a letter</h1>
         </div>
         <div className="content">
-          <CanvasDraw />
+          <CanvasDraw id="canvas" ref={canvasDraw => (this.saveableCanvas = canvasDraw)} brushRadius={canvasData.radius} brushColor={canvasData.color} lazyRadius={canvasData.lazyRadius}/>
+          <Button block onClick={this.handleSaveClick}>
+            Save
+          </Button>
+          <Button block variant="danger"onClick={() => {this.saveableCanvas.clear();}}>
+            Clear
+          </Button>
           <Form>
             <Form.Row>
               <Form.Group as={Col}>
