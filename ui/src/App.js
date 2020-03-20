@@ -55,40 +55,28 @@ class App extends Component {
     localStorage.setItem("savedDrawing", this.saveableCanvas.getSaveData());
     console.log(localStorage);
 
+    // Looks like this is the one
     console.log('bleep');
-    console.log(this.saveableCanvas);
+    let drawing = this.saveableCanvas.canvas.drawing;
+    let drawingUrl = drawing.toDataURL('image/png');
 
-    console.log('blong');
-    console.log(this.saveableCanvas.canvas.drawing.toDataURL('image/png'));
-    let canvas = this.saveableCanvas.canvas.interface;
-    let canvasContainer = this.saveableCanvas.canvas.canvasContainer;
-    // let canvas = this.saveableCanvas;
-    console.log(canvas);
-    console.log(canvas.toDataURL('image/png'));
-
-    console.log(canvasContainer);
-    console.log(canvasContainer.toDataURL('image/png'))
-    // let dataURL = canvas.toDataURL('image/png');
-    // console.log(dataURL);
-
-    // const formData = this.state.formData;
-    // this.setState({ isLoading: true });
-    // fetch('http://127.0.0.1:5000/prediction/', 
-    //   {
-    //     headers: {
-    //       'Accept': 'application/json',
-    //       'Content-Type': 'application/json'
-    //     },
-    //     method: 'POST',
-    //     body: JSON.stringify(formData)
-    //   })
-    //   .then(response => response.json())
-    //   .then(response => {
-    //     this.setState({
-    //       result: response.result,
-    //       isLoading: false
-    //     });
-    //   });
+    this.setState({ isLoading: true });
+    fetch('http://127.0.0.1:5000/prediction/',
+      {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        method: 'POST',
+        body: JSON.stringify(drawingUrl)
+      })
+      .then(response => response.json())
+      .then(response => {
+        this.setState({
+          result: response.result,
+          isLoading: false
+        });
+      });
   }
 
   handlePredictClick = (event) => {
