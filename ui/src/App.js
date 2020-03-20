@@ -61,7 +61,7 @@ class App extends Component {
     let drawingUrl = drawing.toDataURL('image/png');
 
     this.setState({ isLoading: true });
-    fetch('http://127.0.0.1:5000/prediction/',
+    fetch('http://localhost:5000/prediction/',
       {
         headers: {
           'Accept': 'application/json',
