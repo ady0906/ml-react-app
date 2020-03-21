@@ -21,7 +21,7 @@ class App extends Component {
         radius: 5,
         width: 800,
         height: 400,
-        lazyRadius: 5
+        lazyRadius: 2
         // hideGrid: true
       },
       formData: {
@@ -51,12 +51,9 @@ class App extends Component {
   }
 
   handleSaveClick = (event) => {
-    console.log('bloop');
     localStorage.setItem("savedDrawing", this.saveableCanvas.getSaveData());
     console.log(localStorage);
 
-    // Looks like this is the one
-    console.log('bleep');
     let drawing = this.saveableCanvas.canvas.drawing;
     let drawingUrl = drawing.toDataURL('image/png');
 
@@ -73,7 +70,7 @@ class App extends Component {
       .then(response => response.json())
       .then(response => {
         this.setState({
-          result: response.result,
+          result: response,
           isLoading: false
         });
       });
@@ -123,6 +120,13 @@ class App extends Component {
           <Button block variant="danger"onClick={() => {this.saveableCanvas.clear();}}>
             Clear
           </Button>
+          {result === "" ? null :
+            (<Row>
+              <Col className="result-container">
+                <h5 id="result">{result}</h5>
+              </Col>
+            </Row>)
+          }
           <Form>
             <Form.Row>
               <Form.Group as={Col}>
@@ -206,13 +210,6 @@ class App extends Component {
               </Col>
             </Row>
           </Form>
-          {result === "" ? null :
-            (<Row>
-              <Col className="result-container">
-                <h5 id="result">{result}</h5>
-              </Col>
-            </Row>)
-          }
         </div>
       </Container>
     );
