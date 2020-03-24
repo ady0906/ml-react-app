@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
 import ReactDOM from "react-dom";
+import ReactTypingEffect from 'react-typing-effect';
 import CanvasDraw from "react-canvas-draw";
-import Form from 'react-bootstrap/Form';
-import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.css';
@@ -19,82 +17,100 @@ class App extends Component {
       canvasData: {
         color: "#222",
         radius: 5,
-        width: 300,
-        height: 300,
+        width: 250,
+        height: 150,
         lazyRadius: 2
         // hideGrid: true
       },
-      // formData: {
-      //   textfield1: '',
-      //   textfield2: '',
-      //   select1: 1,
-      //   select2: 1,
-      //   select3: 1
-      // },
-      finalWord: "",
+      result: "",
+      justChanged: false,
       currentLetter: ""
     };
   }
 
+  componentDidMount() {
+    document.addEventListener("keydown", this.handleKeyDown, false);
+  }
+  componentWillUnmount() {
+    document.removeEventListener("keydown", this.handleKeyDown, false);
+  }
+
   handleChange = (event) => {
-    const value = event.target.value;
-    const name = event.target.name;
-    var formData = this.state.formData;
-    this.setState({
-      formData
-    });
-    formData[name] = value;
-    // var canvasData = this.state.canvasData;
-    // this.setState({
-    //   canvasData
-    // });
-    // canvasData[name] = value;
+    this.setState({ justChanged: true });
+
+    setTimeout(() => {
+      this.setState({ justChanged: false });
+
+      if (!this.state.justChanged && !this.state.isLoading) {
+        let drawing = this.saveableCanvas.canvas.drawing;
+        let drawingUrl = drawing.toDataURL('image/png');
+        this.saveableCanvas.clear();
+
+        this.setState({ isLoading: true });
+        fetch('http://localhost:5000/prediction/',
+          {
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            method: 'POST',
+            body: JSON.stringify(drawingUrl)
+          })
+          .then(response => response.json())
+          .then(response => {
+            response = response.replace(/'/g,'"');
+            let obj = JSON.parse(response);
+            let prediction = obj['prediction'];
+
+            let str = this.state.result;
+            for (var i = 0; i < prediction.length; i++) {
+
+                let lastChar = str.substr(str.length - 1);
+                let newChar = prediction[i][0][0];
+
+                if (str === '') {
+                  str += newChar.toUpperCase();
+                } else if (lastChar !== ' ') {
+                  str += newChar.toLowerCase();
+                } else {
+                  str += newChar;
+                }
+            }
+
+            this.setState({
+              result: str,
+              isLoading: false
+            });
+          });
+        }
+    }, 1700);
   }
 
 
-  handleSaveClick = (event) => {
-    localStorage.setItem("savedDrawing", this.saveableCanvas.getSaveData());
+  handleBackSpace = (event) => {
+    let str = this.state.result;
+    let newStr = str.slice(0, -1);
+    this.setState({ result: newStr });
+  }
 
-    let drawing = this.saveableCanvas.canvas.drawing;
-    let drawingUrl = drawing.toDataURL('image/png');
+  handleSpace = (event) => {
+    let str = this.state.result + ' ';
+    this.setState({ result: str });
+  }
 
-    // cleanUpJSON = (s) => {
-    //   s = s.replace(/\\n/g, "\\n")  
-    //              .replace(/\\'/g, "\\'")
-    //              .replace(/\\"/g, '\\"')
-    //              .replace(/\\&/g, "\\&")
-    //              .replace(/\\r/g, "\\r")
-    //              .replace(/\\t/g, "\\t")
-    //              .replace(/\\b/g, "\\b")
-    //              .replace(/\\f/g, "\\f");
-    //   s = s.replace(/[\u0000-\u0019]+/g,""); 
-    //   var o = JSON.parse(s);
-    //   return o;
-    // }
+  handleReset = (event) => {
+    this.setState({ result: '' });
+  }
 
-    this.setState({ isLoading: true });
-    fetch('http://localhost:5000/prediction/',
-      {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        method: 'POST',
-        body: JSON.stringify(drawingUrl)
-      })
-      .then(response => response.json())
-      .then(response => {
-        response = response.replace(/'/g,'"');
-        let obj = JSON.parse(response);
-        console.log(obj['prediction']);
-
-        this.setState({
-          result: response,
-
-          // currentLetter: response[0][0],
-          isLoading: false
-        });
-      });
+  handleKeyDown = (event) => {
+    let code = event.keyCode;
+    if (code == 32) {
+      this.handleSpace(event);
+    } else if (code == 8) {
+      this.handleBackSpace(event);
+    } else if (code == 82) {
+      this.handleReset(event);
+    }
   }
 
   handlePredictClick = (event) => {
@@ -113,42 +129,32 @@ class App extends Component {
       .then(response => {
         this.setState({
           result: response.result,
-
           isLoading: false
         });
       });
   }
 
-  handleCancelClick = (event) => {
-    this.setState({ result: "" });
-  }
-
   render() {
     const isLoading = this.state.isLoading;
-    const formData = this.state.formData;
     const canvasData = this.state.canvasData;
     const result = this.state.result;
 
     return (
       <Container>
         <div>
-          <h1 className="title">Griffonne</h1>
+          <h1 className="title"><ReactTypingEffect staticText={result === "" ? 'Griffonne' : result}/></h1>
         </div>
         <div className="content">
-          <CanvasDraw id="canvas" ref={canvasDraw => (this.saveableCanvas = canvasDraw)} brushRadius={canvasData.radius} brushColor={canvasData.color} lazyRadius={canvasData.lazyRadius}/>
-          <Button block onClick={this.handleSaveClick}>
-            Save
+          <CanvasDraw id="canvas" ref={canvasDraw => (this.saveableCanvas = canvasDraw)} brushRadius={canvasData.radius} brushColor={canvasData.color} lazyRadius={canvasData.lazyRadius} onChange={this.handleChange}/>
+          <Button block onClick={this.handleSpace}>
+            Espace
           </Button>
-          <Button block variant="danger"onClick={() => {this.saveableCanvas.clear();}}>
-            Clear
+          <Button block variant="secondary"onClick={this.handleBackSpace}>
+            Retour
           </Button>
-          {result === "" ? null :
-            (<Row>
-              <Col className="result-container">
-                <h5 id="result">{result}</h5>
-              </Col>
-            </Row>)
-          }
+          <Button block variant="danger"onClick={this.handleReset}>
+            Réinitialiser
+          </Button>
         </div>
       </Container>
     );

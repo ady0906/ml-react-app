@@ -8,8 +8,9 @@ html, body {
 
 .content {
   margin: auto;
-  margin-top: 20px;
-  width: 70%;
+  margin-top: 15px;
+  width: 40%;
+  text-align: center;
   height: auto;
   background-color: #fff;
   padding: 20px;
@@ -17,12 +18,12 @@ html, body {
 }
 
 .title {
-  padding-top: 100px;
+  padding-top: 15px;
   text-align: center;
-  text-transform: uppercase;
-  font-weight: 600;
-  font-size: 4em;
-  letter-spacing: 0.15rem;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 500;
+  font-size: 3em;
+  letter-spacing: 0.1rem;
   color: #fff;
 }
 
